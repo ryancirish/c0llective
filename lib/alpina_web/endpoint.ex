@@ -22,7 +22,7 @@ defmodule AlpinaWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :alpina,
-    gzip: false,
+    gzip: false
     # only: AlpinaWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
