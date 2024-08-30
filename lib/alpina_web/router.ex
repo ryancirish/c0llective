@@ -16,7 +16,7 @@ defmodule AlpinaWeb.Router do
   scope "/", AlpinaWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    get "/*path", PageController, :index
   end
 
   scope "/api/json" do

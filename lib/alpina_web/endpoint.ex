@@ -23,7 +23,7 @@ defmodule AlpinaWeb.Endpoint do
     at: "/",
     from: :alpina,
     gzip: false
-    # only: AlpinaWeb.static_paths()
+    only: AlpinaWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

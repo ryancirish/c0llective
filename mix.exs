@@ -65,8 +65,7 @@ defmodule Alpina.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.deploy": [
         "esbuild alpina --minify",
-        "phx.digest",
-        "cmd cp -r priv/static/* _build/prod/lib/alpina/priv/static/"
+        "phx.digest"
       ]
     ]
   end
