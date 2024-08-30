@@ -64,7 +64,7 @@ defmodule Alpina.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.deploy": [
-        "esbuild c0llective --minify",
+        "esbuild alpina --minify",
         "phx.digest"
       ]
     ]
