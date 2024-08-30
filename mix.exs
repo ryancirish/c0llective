@@ -46,7 +46,8 @@ defmodule Alpina.MixProject do
       {:ash, "~> 3.4"},
       {:ash_postgres, "~> 2.2"},
       {:ash_phoenix, "~> 2.1"},
-      {:picosat_elixir, "~> 0.2.3"}
+      {:picosat_elixir, "~> 0.2.3"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev}
     ]
   end
 
