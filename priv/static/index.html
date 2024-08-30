@@ -4,23 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Alpina</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #0066cc;
-        }
-    </style>
 </head>
 <body>
-    <h1>Welcome to Alpina</h1>
-    <p>This is a static HTML page served by the Alpina Phoenix application.</p>
-    <p>The API routes are available under the <code>/api</code> path.</p>
+    <h1 class="center"><i>Collective Faith</i></h1>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create a sphere geometry
+        const radius = 5;
+        const segments = 64;
+        const sphereGeometry = new THREE.SphereGeometry(radius, segments, segments);
+
+        // Create a material for the globe
+        const globeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x1a1a1a,
+            transparent: true,
+            opacity: 0.3
+        });
+
+        // Create the globe mesh
+        const globe = new THREE.Mesh(sphereGeometry, globeMaterial);
+        scene.add(globe);
+
+        // Load the GLTF model
+        let logo;
+
+        // Ensure the GLTFLoader is loaded before using it
+        window.addEventListener('load', () => {
+            if (THREE.GLTFLoader) {
+                const loader = new THREE.GLTFLoader();
+                loader.load(
+                    // Resource URL (update this to your GLTF file's path)
+                    './assets/51BWIUdj.gltf',
+                    // Called when the resource is loaded
+                    function ( gltf ) {
+                        logo = gltf.scene;
+                        
+                        // Calculate the bounding box of the logo
+                        const box = new THREE.Box3().setFromObject(logo);
+                        const size = box.getSize(new THREE.Vector3());
+                        
+                        // Calculate scale to fit inside the globe
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = (radius * 1.5) / maxDim; // Adjust the 1.5 factor as needed
+                        
+                        logo.scale.set(scale, scale, scale);
+                        
+                        // Center the logo
+                        logo.position.set(0, 0, 0);
+                        
+                        scene.add(logo);
+                    },
+                    // Called while loading is progressing
+                    function ( xhr ) {
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    },
+                    // Called when loading has errors
+                    function ( error ) {
+                        console.error( 'An error happened', error );
+                    }
+                );
+            } else {
+                console.error('GLTFLoader not available');
+            }
+        });
+
+        // Create a material for the country outlines
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+
+        // Function to create country outlines
+        function createCountryOutlines() {
+            const loader = new THREE.FileLoader();
+            loader.load('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', function(data) {
+                const countries = JSON.parse(data);
+                countries.features.forEach(feature => {
+                    if (feature.geometry.type === 'Polygon') {
+                        feature.geometry.coordinates.forEach(coord => {
+                            drawPolygon(coord);
+                        });
+                    } else if (feature.geometry.type === 'MultiPolygon') {
+                        feature.geometry.coordinates.forEach(polygon => {
+                            polygon.forEach(coord => {
+                                drawPolygon(coord);
+                            });
+                        });
+                    }
+                });
+            });
+        }
+
+        function drawPolygon(coords) {
+            const lineGeometry = new THREE.BufferGeometry();
+            const points = [];
+            coords.forEach(coord => {
+                const lat = coord[1] * Math.PI / 180;
+                const lon = -coord[0] * Math.PI / 180;
+                const x = radius * Math.cos(lat) * Math.cos(lon);
+                const y = radius * Math.sin(lat);
+                const z = radius * Math.cos(lat) * Math.sin(lon);
+                points.push(new THREE.Vector3(x, y, z));
+            });
+            lineGeometry.setFromPoints(points);
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            globe.add(line);
+        }
+
+        createCountryOutlines();
+
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Add directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 3, 5);
+        scene.add(directionalLight);
+
+        // Position and rotate the camera for a more top-down view
+        camera.position.set(0, 0, 6);
+        camera.lookAt(scene.position);
+
+        // Animation function
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate the globe
+            globe.rotation.y += 0.005;
+            
+            // Rotate and move the logo if it's loaded
+            if (logo) {
+                logo.rotation.x += 0.01;
+                logo.rotation.y += 0.01;
+                const time = Date.now() * 0.001;
+                logo.position.x = Math.sin(time) * (radius * 0.6);
+                logo.position.y = Math.cos(time * 0.8) * (radius * 0.6);
+                logo.position.z = Math.cos(time * 1.2) * (radius * 0.6);
+            }
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
 </body>
 </html>
